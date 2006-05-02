@@ -82,7 +82,7 @@ public class TaskImpl extends Task {
 
             if(a.getSrczip()!=null) {
                 File outSrc = getMavenizedName(srcs, p, "-sources.jar");
-                copy(outSrc, a.getSrczip(), true);
+                copy(outSrc, a.getSrczip(), false);
                 calcChecksum(outSrc);
             }
         }
