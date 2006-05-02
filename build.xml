@@ -1,0 +1,50 @@
+<project name="maven-repository-importer" default="jar">
+  <property name="name" value="maven-repository-importer" />
+
+  <target name="compile">
+      <mkdir dir="build/classes" />
+      <javac srcdir="src" destdir="build/classes" debug="true">
+        <classpath>
+          <fileset dir="lib" />
+        </classpath>
+      </javac>
+  </target>
+
+  <target name="jar" depends="compile" >
+    <tstamp/>
+    <property name="build.id" value="${DSTAMP}${TSTAMP}" /><!-- good property to override from Hudson -->
+    <jar jarfile="build/${name}.jar">
+      <fileset dir="build/classes" />
+      <fileset dir="src" includes="**/*.properties" />
+      <manifest>
+        <attribute name="Build-Id" value="${build.id}" />
+      </manifest>
+    </jar>
+    <zip zipfile="build/${name}.src.zip">
+      <fileset dir="src" />
+    </zip>
+  </target>
+
+  <target name="test" depends="jar">
+    <taskdef resource="maven-repository-importer.properties">
+      <classpath>
+        <pathelement path="build/classes" />
+        <pathelement path="src" />
+      </classpath>
+    </taskdef>
+    <delete dir="build/maven-repository" />
+    <maven-repository-importer
+        destdir="build/maven-repository"
+        jar="build/${name}.jar"
+        pom="${name}.pom"
+        version="${build.id}">
+      <filterset>
+        <filter token="TEST" value="hello!" />
+      </filterset>
+    </maven-repository-importer>
+  </target>
+
+  <target name="clean">
+      <delete dir="build" />
+  </target>
+</project>

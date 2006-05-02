@@ -1,0 +1,179 @@
+<html>
+<head>
+	<title>Maven Repository Importer</title>
+	<style>
+		PRE {
+			margin-left: 2em;
+			padding: 0.5em;
+			border: 1px solid black;
+	</style>
+	<meta http-equiv="Content-type" content="text/html; charset=iso-8859-1" />
+</head>
+<body>
+	<h1>Maven Repository Importer</h1>
+	<div align=right>
+		$Id: index.html,v 1.1 2006-05-02 01:04:29 kohsuke Exp $<br>
+		<a href="mailto:Kohsuke.Kawaguchi@Sun.COM">Kohsuke Kawaguchi</a><br>
+		<a href="http://kohsuke.sfbay/hudson/job/maven-repository-importer/ws/doc/index.html">Latest version of this document</a>
+	</div>
+
+	<p>
+	This ant task helps you import jar files and <a href="http://maven.apache.org/maven-1.x/reference/project-descriptor.html">POMs</a> into <a href="https://maven-repository.dev.java.net/">the java.net maven repository</a>.
+
+	<p>
+	This is only for projects that use Ant for the build system.
+	If your project is built by Maven, use <a href="https://maven-javanet-plugin.dev.java.net/">the maven-javanet-plugin</a>. This will make things super easy.
+
+
+
+	<h2>What Does This Do?</h2>
+	<p>
+	This tool does the following:
+
+	<ol>
+		<li>
+			generates a version-specific POM file from a master POM by using <a href="http://ant.apache.org/manual/CoreTypes/filterset.html">the keyword replacement</a>.
+		<li>
+			generates MD5 checksum files necessary for the maven repository.
+	</ol>
+	
+	<p>
+	After running this task, you still need a separate Ant task
+	to push the prepared bits into the repository.
+
+
+
+	<h2>Usage</h2>
+
+	<p>
+	First, your project needs to be registered with the maven java.net
+	repository. To do this, add the java.net daemon user "maven_repository"
+	to your java.net project. <a href="https://maven-repository.dev.java.net/how-it-works.html">
+	More details</a> are available on a separate document.
+
+	<p>
+	Second, you need to write a master POM file. The simplest POM will look like
+
+<pre><xmp
+><project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.sun.wts.tools.mri</groupId>
+  <artifactId>maven-repository-importer</artifactId>
+  <version>@VERSION@</version>
+</project>
+</xmp></pre>
+
+	<p>
+	"@VERSION@" will be replaced by this task to the appropriate
+	version token. Other keyword substitutions will be discussed later.
+	<a href="http://maven.apache.org/maven-1.x/reference/project-descriptor.html">See the reference of POM</a> and consult our <a href="http://maven.sfbay/">Maven experts</a> if necessary. Reading <a href="https://maven-repository.dev.java.net/nonav/repository/">other POMs on the java.net repository</a>, such as JAXB, would also help.
+
+	<p>
+	In particular, you need to decide the groupId and artifactId that follows the Maven convention. Group IDs are supposed to be a package name --- such as "javax.xml.bind" for JAXB, "javax.xml.ws" for JAX-WS, etc.
+
+	<p>
+	Third, put <a href="http://kohsuke.sfbay/hudson/job/maven-repository-importer/lastSuccessfulBuild/artifact/build/maven-repository-importer.jar"><tt>maven-repository-importer.jar</tt></a> in your project and write a build target that pushes the jars and POMs into the repository:
+
+<pre><xmp
+><target name="push-to-maven-prepare">
+  <taskdef resource="maven-repository-importer.properties">
+    <classpath>
+      <pathelement path="path/to/maven-repository-importer.jar" />
+    </classpath>
+  </taskdef>
+  <delete dir="build/maven-repo" /><!-- clean it -->
+  <maven-repository-importer destdir="build/maven-repo" version="2.0-ea3">
+    <artifact jar="build/mysupercool-api.jar"  pom="mysupercool-api.pom" />
+    <artifact jar="build/mysupercool-impl.jar" pom="mysupercool-impl.pom" />
+  </maven-repository-importer>
+</target>
+
+<target name="push-to-maven" depends="push-to-maven-prepare">
+  <!-- import to CVS-->
+  <tstamp />
+  <echo>importing to CVS...</echo>
+  <cvs dest="build/maven-repo">
+    <commandline>
+      <argument value="-d:pserver:${user.name}@java-net-cvs:/cvs" />
+      <argument line="-z9 import -ko -W *.jar -kb -m" />
+      <argument value="deploying new jars to the java.net maven repository" />
+
+      <argument value="YOURJAVANETPROJECTNAME/repo" />
+      <argument line="deployment-to-maven-repository t${DSTAMP}${TSTAMP}" />
+    </commandline>
+  </cvs>
+</target>
+</xmp></pre>
+
+
+	<h2>Reference</h2>
+	<p>
+		The <tt>&lt;maven-repository-importer></tt> takes the following arguments:
+	
+	<table border=1>
+		<thead>
+			<tr>
+				<td><b>Attribute</b></td>
+				<td><b>Description</b></td>
+				<td><b>Required</b></td>
+			</tr>
+		</thead>
+
+		<tbody>
+			<tr>
+				<td>destdir</td>
+				<td>The directory in which the repository image will be created. To avoid importing old left-over files, this directory should be cleaned up for each build.</td>
+				<td>Yes</td>
+			</tr>
+			<tr>
+				<td>version</td>
+				<td>The version of the jars to be imported. For example, this could be something like "2.0", "2.0-rc1", "200603231125", or "2.0-SNAPSHOT". If you are not familiar with Maven, ask Maven experts for what this value should be. Jar file and POM file is imported with this version as the suffix.</td>
+				<td>Yes</td>
+			</tr>
+		</tbody>
+	</table>
+	
+	<h3>Nested &lt;artifact> elements</h3>
+	<p>
+	Nested artifact element specifies a jar file and a POM file to be published. Multiple elements can be specified to process multiple jar files at once. This elemen takes the following attributes:
+	<table border=1>
+		<thead>
+			<tr>
+				<td><b>Attribute</b></td>
+				<td><b>Description</b></td>
+				<td><b>Required</b></td>
+			</tr>
+		</thead>
+
+		<tbody>
+			<tr>
+				<td>jar</td>
+				<td>The jar file to be posted. This file need not follow the maven jar name convention of <tt>foobar-VERSION.jar</tt>. If not, this task will import the jar with the appropriate name.</td>
+				<td>Yes</td>
+			</tr>
+			<tr>
+				<td>pom</td>
+				<td>The POM file to be posted. This file need not follow the maven jar name convention of <tt>foobar-VERSION.jar</tt>. If not, this task will import the jar with the appropriate name. This file may contain keyword substitution tokens, such as "@VERSION@" and others.</td>
+				<td>Yes</td>
+			</tr>
+		</tbody>
+	</table>
+	
+	<h3>Nested &lt;filterset> elements</h3>
+	<p>
+	If specified, <a href="http://ant.apache.org/manual/CoreTypes/filterset.html">nested &lt;filterset> elements</a> to define additional keyword substitution tokens to be used for POM. By default, "@VERSION@" will be replaced by the value specified by the version attribute.
+	
+	<h3>Example</h3>
+	<p>
+	The following example shows processing of two jars with additional keyword substitution:
+<pre><xmp
+><maven-repository-importer destdir="build/maven-repo" version="2.0-ea3">
+  <artifact jar="build/mysupercool-api.jar"  pom="mysupercool-api.pom" />
+  <artifact jar="build/mysupercool-impl.jar" pom="mysupercool-impl.pom" />
+  <filterset>
+    <filter token="TIMESTAMP" value="${TODAY}"/>
+  </filterset>
+</maven-repository-importer>
+</xmp></pre>
+</body>
+</html>

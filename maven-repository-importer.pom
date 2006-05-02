@@ -1,0 +1,9 @@
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.sun.wts.tools.mri</groupId>
+  <artifactId>maven-repository-importer</artifactId>
+  <!--
+    @TEST@
+  -->
+  <version>@VERSION@</version>
+</project>
