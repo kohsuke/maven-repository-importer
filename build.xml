@@ -25,7 +25,7 @@
     </zip>
   </target>
 
-  <target name="test" depends="jar">
+  <target name="push-to-maven-prepare" depends="jar">
     <taskdef resource="maven-repository-importer.properties">
       <classpath>
         <pathelement path="build/classes" />
@@ -35,16 +35,50 @@
     <delete dir="build/maven-repository" />
     <maven-repository-importer
         destdir="build/maven-repository"
-        jar="build/${name}.jar"
-        pom="${name}.pom"
         version="${build.id}">
+      <artifact
+        jar="build/${name}.jar"
+        pom="${name}.pom" />
       <filterset>
         <filter token="TEST" value="hello!" />
       </filterset>
     </maven-repository-importer>
   </target>
 
+  <target name="push-to-maven" depends="push-to-maven-prepare">
+    <cvs-import src="build/maven-repository" dest="maven-repository-importer/repo"
+      cvsroot=":pserver:${user.name}@cvs.dev.java.net:/cvs" />
+  </target>
+
   <target name="clean">
       <delete dir="build" />
   </target>
+  
+  <!--
+    import files to CVS
+    
+    For example, <cvs-import src="build/doc" dest="jaxb/www/doc" />
+  -->
+  <macrodef name="cvs-import">
+    <attribute name="src"/>
+    <attribute name="dest"/>
+    <attribute name="cvsroot"/>
+    <sequential>
+      <tstamp />
+      <echo>importing to CVS...</echo>
+      <cvs dest="@{src}">
+        <commandline>
+          <argument value="-d@{cvsroot}"/>
+          <argument line="-z9 import -ko"/>
+          <argument value="-W"/>
+          <argument line="*.jar -kb"/>
+          <argument value="-m"/>
+          <argument value="deploying new jars to the java.net maven repository"/>
+          
+          <argument value="@{dest}"/>
+          <argument line="deployment-to-maven-repository t${DSTAMP}${TSTAMP}" />
+        </commandline>
+      </cvs>
+    </sequential>
+  </macrodef>
 </project>
