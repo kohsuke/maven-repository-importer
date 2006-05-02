@@ -12,9 +12,10 @@
 <body>
 	<h1>Maven Repository Importer</h1>
 	<div align=right>
-		$Id: index.html,v 1.1 2006-05-02 01:04:29 kohsuke Exp $<br>
+		$Id: index.html,v 1.2 2006-05-02 20:07:05 kohsuke Exp $<br>
 		<a href="mailto:Kohsuke.Kawaguchi@Sun.COM">Kohsuke Kawaguchi</a><br>
-		<a href="http://kohsuke.sfbay/hudson/job/maven-repository-importer/ws/doc/index.html">Latest version of this document</a>
+		<a href="https://maven-repository-importer.dev.java.net/source/browse/*checkout*/maven-repository-importer/maven-repository-importer/doc/index.html">
+      Latest version of this document</a>
 	</div>
 
 	<p>
@@ -72,7 +73,7 @@
 	In particular, you need to decide the groupId and artifactId that follows the Maven convention. Group IDs are supposed to be a package name --- such as "javax.xml.bind" for JAXB, "javax.xml.ws" for JAX-WS, etc.
 
 	<p>
-	Third, put <a href="http://kohsuke.sfbay/hudson/job/maven-repository-importer/lastSuccessfulBuild/artifact/build/maven-repository-importer.jar"><tt>maven-repository-importer.jar</tt></a> in your project and write a build target that pushes the jars and POMs into the repository:
+	Third, put <a href="https://maven-repository.dev.java.net/nonav/repository/com.sun.wts.tools.mri/jars/"><tt>maven-repository-importer.jar</tt></a> in your project and write a build target that pushes the jars and POMs into the repository:
 
 <pre><xmp
 ><target name="push-to-maven-prepare">
