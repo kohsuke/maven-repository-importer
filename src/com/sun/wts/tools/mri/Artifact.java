@@ -10,6 +10,10 @@ import java.io.File;
 public class Artifact {
     private File jar;
     private File pom;
+    /**
+     * Source zip. May be null.
+     */
+    private File sourceZip;
 
     public File getJar() {
         return jar;
@@ -27,12 +31,22 @@ public class Artifact {
         this.pom = pom;
     }
 
+    public void setSrczip(File file) {
+        this.sourceZip = file;
+    }
+
+    public File getSrczip() {
+        return sourceZip;
+    }
+
     /**
      * Makes sure that the configuration is valid.
      */
     public void validate() throws BuildException {
         check(pom, "POM");
         check(jar, "jar");
+        if(sourceZip!=null)
+            check(sourceZip,"source zip");
     }
 
     private void check(File f, String caption) {

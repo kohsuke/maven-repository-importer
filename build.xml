@@ -38,7 +38,8 @@
         version="${build.id}">
       <artifact
         jar="build/${name}.jar"
-        pom="${name}.pom" />
+        pom="${name}.pom"
+        srczip="build/${name}.src.zip" />
       <filterset>
         <filter token="TEST" value="hello!" />
       </filterset>
