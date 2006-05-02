@@ -55,9 +55,11 @@
   </target>
   
   <!--
-    import files to CVS
+    import files to CVS.
     
     For example, <cvs-import src="build/doc" dest="jaxb/www/doc" />
+    
+    This is primarily used for importing jars into the maven repository
   -->
   <macrodef name="cvs-import">
     <attribute name="src"/>
