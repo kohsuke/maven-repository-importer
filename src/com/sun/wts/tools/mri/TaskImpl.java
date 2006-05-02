@@ -72,16 +72,16 @@ public class TaskImpl extends Task {
             srcs.mkdirs();
 
             // copy the files over
-            File outJar = getMavenizedName(a.getJar(), jars, p.version, ".jar");
+            File outJar = getMavenizedName(jars, p, ".jar");
             copy(outJar, a.getJar(), false);
             calcChecksum(outJar);
 
-            File outPom = getMavenizedName(a.getPom(), poms, p.version, ".pom");
+            File outPom = getMavenizedName(poms, p, ".pom");
             copy(outPom, a.getPom(), true);
             calcChecksum(outPom);
 
             if(a.getSrczip()!=null) {
-                File outSrc = getMavenizedName(a.getSrczip(), srcs, p.version, "-sources.jar");
+                File outSrc = getMavenizedName(srcs, p, "-sources.jar");
                 copy(outSrc, a.getSrczip(), true);
                 calcChecksum(outSrc);
             }
@@ -105,6 +105,7 @@ public class TaskImpl extends Task {
 
             Pom pom = new Pom(
                 getElementText(dom, a, "groupId"),
+                getElementText(dom, a, "artifactId"),
                 getElementText(dom, a, "version"));
 
             tmp.delete();
@@ -156,20 +157,7 @@ public class TaskImpl extends Task {
      * <p>
      * Note that the input might already be converted into the right form.
      */
-    private File getMavenizedName(File src, File dstDir, String version, String extension) {
-        // cut file name into BODY.EXT form
-        String fileName = src.getName();
-        int idx =fileName.lastIndexOf('.');
-        String body;
-        if(idx==-1) {
-            body = fileName;
-        } else {
-            body = fileName.substring(0,idx);
-        }
-
-        if(!body.endsWith('-'+version))
-            body += '-'+version;
-
-        return new File(dstDir,body+extension);
+    private File getMavenizedName(File dstDir, Pom pom, String extension) {
+        return new File(dstDir,pom.artifactId+'-'+pom.version+extension);
     }
 }
