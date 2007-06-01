@@ -20,6 +20,16 @@
         <attribute name="Build-Id" value="${build.id}" />
       </manifest>
     </jar>
+    <jar jarfile="build/${name}-cli.jar">
+      <fileset dir="build/classes" />
+      <fileset dir="src" includes="**/*.properties" />
+      <zipgroupfileset dir="lib" includes="ant.jar" />
+      <manifest>
+        <attribute name="Main-Class" value="com.sun.wts.tools.mri.Main" />
+        <attribute name="Build-Id" value="${build.id}" />
+      </manifest>
+    </jar>
+
     <zip zipfile="build/${name}.src.zip">
       <fileset dir="src" />
     </zip>
